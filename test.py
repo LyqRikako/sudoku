@@ -83,7 +83,6 @@ def generate_sudoku_puzzle(level=5):
             solutions.append(future.result())
 
     return puzzles, solutions
-
 # 格式化并打印数独板
 def format_sudoku(board):
     formatted_board = ""
@@ -105,6 +104,45 @@ def display_sudoku(board):
     formatted_board = format_sudoku(board)
     print(formatted_board)
 
+#检查答案
+def is_valid_sudoku(board):
+    # 将答案的一行取出来 检查行是否符合要求
+    for row in board:
+        if not is_valid_row(row):
+            return False
+
+    # 检查列是否符合要求
+    for col in range(9):
+        #将答案的一列取出来 检查是否符合要求
+        column = [board[row][col] for row in range(9)]
+        if not is_valid_row(column):
+            return False
+
+    # 检查每个3x3的子区域是否符合要求
+    for i in range(0, 9, 3):
+        for j in range(0, 9, 3):
+            subgrid = [board[x][y] for x in range(i, i + 3) for y in range(j, j + 3)]
+            if not is_valid_row(subgrid):
+                return False
+
+    return True
+
+def is_valid_row(row):
+    #创建一个空集合
+    seen = set()
+    for num in row:
+        if num != 0:
+            if num in seen:
+                return False
+            seen.add(num)
+    return True
+
+#提示功能，传入对应的行和列给出标准答案中的数字
+def tip(solution,flag,row,col):
+    return solution[9*flag+row-10][col-1]
+
+
+
 def main():
     # 生成数独谜题和答案，并显示
     sudoku_puzzles, sudoku_solutions = generate_sudoku_puzzle()
@@ -115,6 +153,7 @@ def main():
         print("答案：")
         display_sudoku(solution)
         print()
-
+        #提示功能，输入九宫格中的行和列，给出标准答案的提示
+        tipnumber=tip(sudoku_solutions,flag,row,col)
 if __name__ == "__main__":
     main()
