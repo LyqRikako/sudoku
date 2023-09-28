@@ -60,12 +60,14 @@ difficulty_mapping = {
     "困难": 3,
 }
 # 获取固定的数独
+# 通过对答案挖空生成数独题目
 # 设置一个随机数，在挖空的时候对每个空判断随机数，如果小于等于所设难度等级，则保留数字，否则挖空为0
 # 根据概率学 难度为9挖空10%，难度为8挖空20%，以此类推,
 def get_fixed_sudoku(board, level):
     fixed_board = [[val if random.randint(1, 10) <= level else 0 for val in row] for row in board]
     return fixed_board
-# 生成数独谜题和答案
+
+# 多线程生成数独谜题和答案的主要函数
 def generate_sudoku_puzzle(level,thread_number):
     puzzles = []
     solutions = []
@@ -76,6 +78,7 @@ def generate_sudoku_puzzle(level,thread_number):
             puzzles.append(get_fixed_sudoku(future.result(), diff))
             solutions.append(future.result())
     return puzzles, solutions
+
 # 格式化并打印数独板
 def format_sudoku(board):
     formatted_board = ""
@@ -95,8 +98,9 @@ def format_sudoku(board):
 def display_sudoku(board):
     formatted_board = format_sudoku(board)
     print(formatted_board)
+
 # 检查答案
-def is_valid_sudoku(board):
+def check_answer(board):
     # 将答案的一行取出来 检查行是否符合要求
     for row in board:
         if not is_valid_row(row):
@@ -114,6 +118,8 @@ def is_valid_sudoku(board):
             if not is_valid_row(subgrid):
                 return False
     return True
+
+#检查数独一行或者一列的合法性
 def is_valid_row(row):
     # 创建一个空集合
     seen = set()
@@ -124,9 +130,10 @@ def is_valid_row(row):
             return False
         seen.add(num)
     return True
-#数独棋盘合法性
+
+#检查整个数独棋盘的合法性
 def is_valid_sudoku(board):
-    # Check rows
+    # 检查行
     for row in range(9):
         nums = [0] * 10
         for col in range(9):
@@ -135,7 +142,7 @@ def is_valid_sudoku(board):
                 if nums[num]:
                     return False
                 nums[num] = 1
-    # Check columns
+    # 检查列
     for col in range(9):
         nums = [0] * 10
         for row in range(9):
@@ -144,7 +151,7 @@ def is_valid_sudoku(board):
                 if nums[num]:
                     return False
                 nums[num] = 1
-    # Check squares
+    # 检查九宫格
     for i in range(3):
         for j in range(3):
             nums = [0] * 10
@@ -166,6 +173,5 @@ def main():
         print("答案：")
         display_sudoku(solution)
         print()
-        # 提示功能，输入九宫格中的行和列，给出标准答案的提示
 if __name__ == "__main__":
     main()
