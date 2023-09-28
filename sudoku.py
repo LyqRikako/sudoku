@@ -56,8 +56,9 @@ difficulty_mapping = {
     "新手": 8,
     "简单": 7,
     "一般": 6,
-    "中等": 4,
-    "困难": 3,
+    "中等": 5,
+    "困难": 4,
+    "专家": 3
 }
 # 获取固定的数独
 # 设置一个随机数，在挖空的时候对每个空判断随机数，如果小于等于所设难度等级，则保留数字，否则挖空为0
@@ -95,8 +96,8 @@ def format_sudoku(board):
 def display_sudoku(board):
     formatted_board = format_sudoku(board)
     print(formatted_board)
-# 检查答案
-def is_valid_sudoku(board):
+#检查答案
+def check_answer(board):
     # 将答案的一行取出来 检查行是否符合要求
     for row in board:
         if not is_valid_row(row):
