@@ -23,6 +23,8 @@ def could_place(board, row, col, num):
     return True
 # 判明数独是否有解
 def solve_sudoku(board):
+    if not is_valid_sudoku(board):  # 如果当前数独不合法，直接返回 False
+        return False
     for row in range(9):
         for col in range(9):
             if board[row][col] == 0:
@@ -122,12 +124,41 @@ def is_valid_row(row):
             return False
         seen.add(num)
     return True
-# 提示功能，传入对应的行和列给出标准答案中的数字
-def tip(solution, flag, row, col):
-    return solution[9 * flag + row - 10][col - 1]
+#数独棋盘合法性
+def is_valid_sudoku(board):
+    # Check rows
+    for row in range(9):
+        nums = [0] * 10
+        for col in range(9):
+            num = board[row][col]
+            if num != 0:
+                if nums[num]:
+                    return False
+                nums[num] = 1
+    # Check columns
+    for col in range(9):
+        nums = [0] * 10
+        for row in range(9):
+            num = board[row][col]
+            if num != 0:
+                if nums[num]:
+                    return False
+                nums[num] = 1
+    # Check squares
+    for i in range(3):
+        for j in range(3):
+            nums = [0] * 10
+            for row in range(i * 3, (i + 1) * 3):
+                for col in range(j * 3, (j + 1) * 3):
+                    num = board[row][col]
+                    if num != 0:
+                        if nums[num]:
+                            return False
+                        nums[num] = 1
+    return True
 def main():
     # 生成数独谜题和答案，并显示
-    sudoku_puzzles, sudoku_solutions = generate_sudoku_puzzle()
+    sudoku_puzzles, sudoku_solutions = generate_sudoku_puzzle(4,9)
     for puzzle, solution in zip(sudoku_puzzles, sudoku_solutions):
         print("数独谜题：")
         print(puzzle)
