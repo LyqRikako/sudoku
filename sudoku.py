@@ -1,5 +1,6 @@
 import concurrent.futures
 import random
+import copy
 # 判断是否可以填数
 # 第一步判断，用于判断行和列重复
 # board用于存储九宫格的数字，row为行，col为列，输入一个数字num判断行列中是否有重复
@@ -72,13 +73,21 @@ def get_fixed_sudoku(board, level):
 def generate_sudoku_puzzle(level,thread_number):
     puzzles = []
     solutions = []
+    solvetest=[]
     diff= difficulty_mapping.get(level,4)
     with concurrent.futures.ThreadPoolExecutor() as executor:
         for _ in range(thread_number):
             future = executor.submit(generate_sudoku)
-            puzzles.append(get_fixed_sudoku(future.result(), diff))
+            puzzle=get_fixed_sudoku(future.result(), diff)
+            puzzles.append(copy.deepcopy(puzzle))
+            # print("puzzle1",puzzle)
             solutions.append(future.result())
-    return puzzles, solutions
+            solve_sudoku(puzzle)
+            # print("puzzle2",puzzle)
+            solvetest.append(puzzle)
+            # print("puzzle3",puzzles)
+            
+    return puzzles, solutions ,solvetest
 
 # 格式化并打印数独板
 def format_sudoku(board):
@@ -163,15 +172,65 @@ def is_valid_sudoku(board):
                             return False
                         nums[num] = 1
     return True
+
+def check_and_tip(puzzle,user_answer):
+    blank = []
+    false_map=[]
+    for i in range(9):
+        for j in range(9):
+            if puzzle[i][j] == 0:  # 判断是否为空格
+                blank.append([i, j])  # 将空格的横纵坐标添加到blank列表中
+    for coord in blank:
+        x = coord[0]
+        y = coord[1]
+        flag = 0
+        # 检查空格处所填数字的合法性
+        # 检查行合法性
+        for col in range(9):
+            if user_answer[x][col] == user_answer[x][y] and col != y:
+                false_map.append([x, y])
+                flag = 1
+                break
+        if flag == 1:
+            continue
+        
+        # 检查列合法性
+        for row in range(9):
+            if user_answer[row][y] == user_answer[x][y] and row != x:
+                false_map.append([x, y])
+                flag = 1
+                break
+        if flag == 1:
+            continue
+
+        # 检查九宫格合法性
+        row_start = (x // 3) * 3
+        col_start = (y // 3) * 3
+        for row in range(row_start, row_start + 3):
+            for col in range(col_start, col_start + 3):
+                if user_answer[row][col] == user_answer[x][y] and row != x and col != y:
+                    false_map.append([x, y])
+                    flag = 1
+                    break
+            if flag == 1:
+                break
+    return false_map
+
+
+
+
+
 def main():
     # 生成数独谜题和答案，并显示
-    sudoku_puzzles, sudoku_solutions = generate_sudoku_puzzle(4,9)
-    for puzzle, solution in zip(sudoku_puzzles, sudoku_solutions):
+    sudoku_puzzles, sudoku_solutions ,solvetest= generate_sudoku_puzzle(4,9)
+    for puzzle, solution ,solve in zip(sudoku_puzzles, sudoku_solutions ,solvetest):
         print("数独谜题：")
         print(puzzle)
         display_sudoku(puzzle)
         print("答案：")
         display_sudoku(solution)
+        print("jieda:")
+        display_sudoku(solve)
         print()
 if __name__ == "__main__":
     main()
