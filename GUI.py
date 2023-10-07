@@ -54,10 +54,10 @@ def generate_GUI(thread_number):
     # 切换9道数独题目
     notebook.bind("<<NotebookTabChanged>>", switch_puzzle)
     # 添加难度选择按钮
-    colors = ["#C5E1A5", "#E6EE9C", "#FBC02D", "#FF6F00", "#E64A19", "#DD2C00"]
+    colors = ["#C5E1A5", "#E6EE9C", "#FBC02D", "#FF6F00", "#E64A19", "#DD2C00", "#FF1744"]
     ttk.Label(difficulty_frame, text="难度选择",font=("",15,"bold")).grid(row=0, column=0, columnspan=3, pady=(0, 10))
     button_difficulty = {}
-    for idx, difficulty in enumerate(["新手", "简单", "一般", "中等", "困难","专家"]):
+    for idx, difficulty in enumerate(["新手", "简单", "一般", "中等", "困难","专家","自定义"]):
         button_difficulty[difficulty] = tk.Button(difficulty_frame, text=difficulty, width=8,
                                                    command=partial(selected_difficulty, difficulty, thread_number))
         button_difficulty[difficulty].configure(bg=colors[idx],fg="#000")
@@ -101,7 +101,8 @@ def update_display(idx):
 def switch_puzzle(event):
     global notebook
     idx = int(notebook.index(notebook.select()))
-    update_display(idx)
+    if idx < thread_number:
+        update_display(idx)
 # 设置输入框颜色
 def set_insert_color(row, col):
     global selected_block
@@ -147,9 +148,9 @@ def selected_difficulty(difficulty, thread_number):
     global diff_chosen
     global puzzles
     global solutions
+    global current_thread
     diff_chosen = difficulty
     # 生成新的数独题目
-    global current_thread
     current_thread = notebook.index(notebook.select())
     puzzles , solutions = sudoku.generate_sudoku_puzzle(difficulty,thread_number)
     # 更新数独并提示
