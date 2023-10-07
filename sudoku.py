@@ -1,6 +1,8 @@
 import concurrent.futures
 import random
 import copy
+
+
 # 判断是否可以填数
 # 第一步判断，用于判断行和列重复
 # board用于存储九宫格的数字，row为行，col为列，输入一个数字num判断行列中是否有重复
@@ -22,6 +24,8 @@ def could_place(board, row, col, num):
             if board[i][j] == num:
                 return False
     return True
+
+
 # 判明数独是否有解
 def solve_sudoku(board):
     if not is_valid_sudoku(board):  # 如果当前数独不合法，直接返回 False
@@ -38,6 +42,16 @@ def solve_sudoku(board):
                         board[row][col] = 0
                 return False
     return True
+# 处理用户自定义数独
+def get_user_answer(board):
+    solve_sudoku(board)
+    has_solution = solve_sudoku(board)
+    # 数独有解返回解答后的数独
+    if has_solution:
+        return board
+    # 数独无解返回[1]
+    else:
+        return [1]
 # 生成数独答案
 def generate_sudoku():
     # 初始化一个空的9*9二维列表
@@ -53,13 +67,15 @@ def generate_sudoku():
                         return board
                     board[row][col] = 0
 
+
 difficulty_mapping = {
     "新手": 8,
     "简单": 7,
     "一般": 6,
     "中等": 5,
     "困难": 4,
-    "专家": 3
+    "专家": 3,
+    "自定义": 0
 }
 # 获取固定的数独
 # 通过对答案挖空生成数独题目
@@ -68,27 +84,21 @@ difficulty_mapping = {
 def get_fixed_sudoku(board, level):
     fixed_board = [[val if random.randint(1, 10) <= level else 0 for val in row] for row in board]
     return fixed_board
-
 # 多线程生成数独谜题和答案的主要函数
-def generate_sudoku_puzzle(level,thread_number):
+def generate_sudoku_puzzle(level, thread_number):
     puzzles = []
-    solutions = []
-    solvetest=[]
-    diff= difficulty_mapping.get(level,4)
+    # solutions = []
+    solvetest = []
+    diff = difficulty_mapping.get(level, 4)
     with concurrent.futures.ThreadPoolExecutor() as executor:
         for _ in range(thread_number):
             future = executor.submit(generate_sudoku)
-            puzzle=get_fixed_sudoku(future.result(), diff)
+            puzzle = get_fixed_sudoku(future.result(), diff)
             puzzles.append(copy.deepcopy(puzzle))
-            # print("puzzle1",puzzle)
-            solutions.append(future.result())
+            # solutions.append(future.result())
             solve_sudoku(puzzle)
-            # print("puzzle2",puzzle)
             solvetest.append(puzzle)
-            # print("puzzle3",puzzles)
-            
-    return puzzles, solutions ,solvetest
-
+    return puzzles, solvetest
 # 格式化并打印数独板
 def format_sudoku(board):
     formatted_board = ""
@@ -108,7 +118,7 @@ def format_sudoku(board):
 def display_sudoku(board):
     formatted_board = format_sudoku(board)
     print(formatted_board)
-#检查答案
+# 检查答案
 def check_answer(board):
     # 将答案的一行取出来 检查行是否符合要求
     for row in board:
@@ -127,8 +137,7 @@ def check_answer(board):
             if not is_valid_row(subgrid):
                 return False
     return True
-
-#检查数独一行或者一列的合法性
+# 检查数独一行或者一列的合法性
 def is_valid_row(row):
     # 创建一个空集合
     seen = set()
@@ -139,8 +148,7 @@ def is_valid_row(row):
             return False
         seen.add(num)
     return True
-
-#检查整个数独棋盘的合法性
+# 检查整个数独棋盘的合法性
 def is_valid_sudoku(board):
     # 检查行
     for row in range(9):
@@ -172,10 +180,9 @@ def is_valid_sudoku(board):
                             return False
                         nums[num] = 1
     return True
-
-def check_and_tip(puzzle,user_answer):
+def check_and_tip(puzzle, user_answer):
     blank = []
-    false_map=[]
+    false_map = []
     for i in range(9):
         for j in range(9):
             if puzzle[i][j] == 0:  # 判断是否为空格
@@ -193,7 +200,6 @@ def check_and_tip(puzzle,user_answer):
                 break
         if flag == 1:
             continue
-        
         # 检查列合法性
         for row in range(9):
             if user_answer[row][y] == user_answer[x][y] and row != x:
@@ -202,7 +208,6 @@ def check_and_tip(puzzle,user_answer):
                 break
         if flag == 1:
             continue
-
         # 检查九宫格合法性
         row_start = (x // 3) * 3
         col_start = (y // 3) * 3
@@ -215,15 +220,10 @@ def check_and_tip(puzzle,user_answer):
             if flag == 1:
                 break
     return false_map
-
-
-
-
-
 def main():
     # 生成数独谜题和答案，并显示
-    sudoku_puzzles, sudoku_solutions ,solvetest= generate_sudoku_puzzle(4,9)
-    for puzzle, solution ,solve in zip(sudoku_puzzles, sudoku_solutions ,solvetest):
+    sudoku_puzzles, sudoku_solutions, solvetest = generate_sudoku_puzzle(4, 9)
+    for puzzle, solution, solve in zip(sudoku_puzzles, sudoku_solutions, solvetest):
         print("数独谜题：")
         print(puzzle)
         display_sudoku(puzzle)
