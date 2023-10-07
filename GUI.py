@@ -54,7 +54,7 @@ def generate_GUI(thread_number):
     # 切换9道数独题目
     notebook.bind("<<NotebookTabChanged>>", switch_puzzle)
     # 添加难度选择按钮
-    colors = ["#C5E1A5", "#E6EE9C", "#FBC02D", "#FF6F00", "#E64A19", "#DD2C00", "#FF1744"]
+    colors = ["#C5E1A5", "#E6EE9C", "#FBC02D", "#FF6F00", "#E64A19", "#DD2C00", "#76FF03"]
     ttk.Label(difficulty_frame, text="难度选择",font=("",15,"bold")).grid(row=0, column=0, columnspan=3, pady=(0, 10))
     button_difficulty = {}
     for idx, difficulty in enumerate(["新手", "简单", "一般", "中等", "困难","专家","自定义"]):
@@ -134,7 +134,6 @@ def on_cell_click(solutions,row, col):
     selected_row = row
     selected_col = col
     print(f"选中的空白单元格：行{row + 1}，列{col + 1}")
-    print(solutions[0][0])
 def get_selected_cell():
     global selected_row, selected_col
     global selected_row, selected_col
@@ -182,18 +181,36 @@ def show_answer(root):
     global current_thread
     # 获取当前选定的数独索引
     idx = int(notebook.index(notebook.select()))
-    show_answer_frame(solutions[idx], root)
+    if diff_chosen == "自定义":
+        completed_sudoku = get_completed_sudoku(idx)
+        answer= sudoku.get_user_answer(completed_sudoku)
+        if not answer == [1]:
+            show_answer_frame(answer, root)
+        else:
+            messagebox.showinfo("提示", "对不起，您提供的数独无解！")
+    else:
+        show_answer_frame(solutions[idx], root)
 # 提示答案部分
 def show_completed_sudoku():
     # 获取当前选定的数独索引
     idx = int(notebook.index(notebook.select()))
     # 获取已完成的数独
     completed_sudoku = get_completed_sudoku(idx)
-    print(completed_sudoku)
+    #print(completed_sudoku)
     if sudoku.check_answer(completed_sudoku):
         messagebox.showinfo("提示", "恭喜你，答案正确！")
     else:
-        messagebox.showinfo("提示", "很遗憾，答案错误！")
+        error_list = []
+        error_map = sudoku.check_and_tip(puzzles[idx],completed_sudoku)
+        for error in error_map:
+            row_index, col_index = error
+            row_number = row_index + 1
+            col_number = col_index + 1
+            print(f"第{row_number}行第{col_number}列有错误")
+            error_msg = f"第{row_number}行第{col_number}列有错误"
+            error_list.append(error_msg)
+    error_message = "\n".join(error_list)  # 使用换行符连接错误信息
+    messagebox.showinfo("提示", f"很遗憾，答案错误！\n{error_message}")
 def get_completed_sudoku(idx):
     completed_sudoku = []
     for i in range(9):
